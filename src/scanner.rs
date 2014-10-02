@@ -1,13 +1,13 @@
-use super::{Cursor, Tokenizer, Whitespace};
+use super::{ScanCursor, Tokenizer, Whitespace};
 use super::{ScanError, OtherScanError};
 
 pub trait Scanner<T> {
-	fn scan<'a, Tok: Tokenizer, Sp: Whitespace>(cursor: &Cursor<'a, Tok, Sp>) -> Result<(Self, Cursor<'a, Tok, Sp>), ScanError>;
+	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(Self, Cur), ScanError>;
 	fn scanned_value(self) -> T;
 }
 
 impl Scanner<int> for int {
-	fn scan<'a, Tok: Tokenizer, Sp: Whitespace>(cursor: &Cursor<'a, Tok, Sp>) -> Result<(int, Cursor<'a, Tok, Sp>), ScanError> {
+	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(int, Cur), ScanError> {
 		use std::from_str::FromStr;
 
 		let int_str_end = scan_int(cursor.tail_str());

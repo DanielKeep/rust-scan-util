@@ -3,6 +3,17 @@ use super::{ScanError, OtherScanError};
 
 use std::str::CharRange;
 
+pub trait ScanCursor<'scanee>: Clone {
+	fn expect_tok(&self, s: &str) -> Result<Self, ScanError>;
+	fn consumed(&self) -> uint;
+	fn pop_token(&self) -> Option<(&'scanee str, Self)>;
+	fn pop_ws(&self) -> Self;
+	fn slice_from(&self, from: uint) -> Self;
+	fn str_slice_to(&self, to: uint) -> &'scanee str;
+	fn tail_str(&self) -> &'scanee str;
+	fn is_empty(&self) -> bool;
+}
+
 #[deriving(Clone, Show)]
 pub struct Cursor<'a, Tok: Tokenizer, Sp: Whitespace> {
 	slice: &'a str,
@@ -20,8 +31,10 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace> Cursor<'a, Tok, Sp> {
 			sp: sp,
 		}
 	}
+}
 
-	pub fn expect_tok(&self, s: &str) -> Result<Cursor<'a, Tok, Sp>, ScanError> {
+impl<'a, Tok: Tokenizer, Sp: Whitespace> ScanCursor<'a> for Cursor<'a, Tok, Sp> {
+	fn expect_tok(&self, s: &str) -> Result<Cursor<'a, Tok, Sp>, ScanError> {
 		debug!("{}.expect_tok({})", self, s);
 		match self.pop_token() {
 			None => Err(OtherScanError(format!("expected `{}`, found end of input", s), self.offset)),
@@ -35,11 +48,11 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace> Cursor<'a, Tok, Sp> {
 		}
 	}
 
-	pub fn consumed(&self) -> uint {
+	fn consumed(&self) -> uint {
 		self.offset
 	}
 
-	pub fn pop_token(&self) -> Option<(&'a str, Cursor<'a, Tok, Sp>)> {
+	fn pop_token(&self) -> Option<(&'a str, Cursor<'a, Tok, Sp>)> {
 		debug!("{}.pop_token()", self);
 		let cur = self;
 
@@ -68,28 +81,28 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace> Cursor<'a, Tok, Sp> {
 		}
 	}
 
-	pub fn pop_ws(&self) -> Cursor<'a, Tok, Sp> {
+	fn pop_ws(&self) -> Cursor<'a, Tok, Sp> {
 		debug!("{}.pop_ws()", self);
 
 		self.slice_from(self.sp.strip_len(self.tail_str()))
 	}
 
-	pub fn slice_from(&self, from: uint) -> Cursor<'a, Tok, Sp> {
+	fn slice_from(&self, from: uint) -> Cursor<'a, Tok, Sp> {
 		Cursor {
 			offset: ::std::cmp::min(self.slice.len(), self.offset + from),
 			..self.clone()
 		}
 	}
 
-	pub fn str_slice_to(&self, to: uint) -> &'a str {
+	fn str_slice_to(&self, to: uint) -> &'a str {
 		self.tail_str().slice_to(to)
 	}
 
-	pub fn tail_str(&self) -> &'a str {
+	fn tail_str(&self) -> &'a str {
 		self.slice.slice_from(self.offset)
 	}
 
-	pub fn is_empty(&self) -> bool {
+	fn is_empty(&self) -> bool {
 		self.offset == self.slice.len()
 	}
 }
