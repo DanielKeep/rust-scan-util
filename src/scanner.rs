@@ -3,7 +3,6 @@ use super::{ScanError, OtherScanError};
 
 pub trait Scanner<T> {
 	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(Self, Cur), ScanError>;
-	fn scanned_value(self) -> T;
 }
 
 impl Scanner<int> for int {
@@ -25,10 +24,6 @@ impl Scanner<int> for int {
 		FromStr::from_str(int_str)
 			.map(ref |i| Ok((i, cursor.clone())))
 			.unwrap_or_else(|| Err(OtherScanError(format!("expected integer, got `{}`", int_str), cursor.consumed())))
-	}
-
-	fn scanned_value(self) -> int {
-		self
 	}
 }
 
