@@ -1,4 +1,4 @@
-use super::{ScanCursor, Tokenizer, Whitespace};
+use super::ScanCursor;
 use super::{ScanError, OtherScanError};
 
 pub trait Scanner<T> {
