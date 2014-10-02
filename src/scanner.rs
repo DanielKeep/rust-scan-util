@@ -37,6 +37,13 @@ impl<'a> Scanner<'a, bool> for bool {
 	}
 }
 
+impl<'a> Scanner<'a, &'a str> for &'a str {
+	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(&'a str, Cur), ScanError> {
+		cursor.pop_token().map(|sc| Ok(sc))
+			.unwrap_or_else(|| Err(OtherScanError("expected token".into_string(), cursor.consumed())))
+	}
+}
+
 from_str_scanner! { scan_float -> f32 as "real number" }
 from_str_scanner! { scan_float -> f64 as "real number" }
 from_str_scanner! { scan_int -> i8 as "8-bit integer" }
@@ -232,5 +239,14 @@ mod test {
 		assert!(scan_a::<uint>("-0").err().is_some());
 		assert!(scan_a::<uint>("-42").err().is_some());
 		assert!(scan_a::<uint>("-1_234").err().is_some());
+	}
+
+	#[test]
+	fn test_str() {
+		assert!(scan_a::<&str>("").err().is_some());
+		assert!(scan_a::<&str>("a").ok().unwrap().0 == "a");
+		assert!(scan_a::<&str>("a b").ok().unwrap().0 == "a");
+		assert!(scan_a::<&str>("abc").ok().unwrap().0 == "abc");
+		assert!(scan_a::<&str>("ab-c").ok().unwrap().0 == "ab");
 	}
 }
