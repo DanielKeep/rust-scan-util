@@ -4,7 +4,7 @@
 
 pub use cursor::Cursor;
 pub use scan_error::{ScanError, NothingMatched, OtherScanError, ScanIoError};
-pub use scanner::{Scanner, NegInt};
+pub use scanner::Scanner;
 pub use tokenizer::Tokenizer;
 pub use whitespace::Whitespace;
 
