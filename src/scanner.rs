@@ -37,6 +37,18 @@ impl<'a> Scanner<'a, bool> for bool {
 	}
 }
 
+impl<'a> Scanner<'a, char> for char {
+	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(char, Cur), ScanError> {
+		let s = cursor.tail_str();
+		if s.len() == 0 {
+			Err(OtherScanError("expected character".into_string(), cursor.consumed()))
+		} else {
+			let ::std::str::CharRange { ch, next } = s.char_range_at(0);
+			Ok((ch, cursor.slice_from(next)))
+		}
+	}
+}
+
 impl<'a> Scanner<'a, &'a str> for &'a str {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(&'a str, Cur), ScanError> {
 		cursor.pop_token().map(|sc| Ok(sc))
@@ -153,6 +165,14 @@ mod test {
 		assert!(scan_a::<bool>("off").err().is_some());
 		assert!(scan_a::<bool>("1").err().is_some());
 		assert!(scan_a::<bool>("0").err().is_some());
+	}
+
+	#[test]
+	fn test_char() {
+		assert!(scan_a::<char>("").err().is_some());
+		assert!(scan_a::<char>("x").unwrap().0 == 'x');
+		assert!(scan_a::<char>("xy").unwrap().0 == 'x');
+		assert!(scan_a::<char>("日本語").unwrap().0 == '日');
 	}
 
 	#[test]
