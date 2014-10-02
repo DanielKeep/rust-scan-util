@@ -29,6 +29,14 @@ pub trait Scanner<T> {
 	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(Self, Cur), ScanError>;
 }
 
+impl Scanner<bool> for bool {
+	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(bool, Cur), ScanError> {
+		cursor.expect_tok("true").map(|c| (true, c))
+			.or_else(|_| cursor.expect_tok("false").map(|c| (false, c)))
+			.or_else(|_| Err(OtherScanError(format!("expected `true` or `false`, got `{}`", cursor.tail_str()), cursor.consumed())))
+	}
+}
+
 from_str_scanner! { scan_int -> i8 as "8-bit integer" }
 from_str_scanner! { scan_int -> i16 as "16-bit integer" }
 from_str_scanner! { scan_int -> i32 as "32-bit integer" }
@@ -78,6 +86,19 @@ mod test {
 
 	fn scan_a<'a, T: Scanner<T>>(s: &'a str) -> Result<(T, Cursor<'a, WordsAndInts, Ignore>), ScanError> {
 		Scanner::scan(&cur(s))
+	}
+
+	#[test]
+	fn test_bool() {
+		assert!(scan_a::<bool>("").err().is_some());
+		assert!(scan_a::<bool>("true").unwrap().0 == true);
+		assert!(scan_a::<bool>("false").unwrap().0 == false);
+		assert!(scan_a::<bool>("yes").err().is_some());
+		assert!(scan_a::<bool>("no").err().is_some());
+		assert!(scan_a::<bool>("on").err().is_some());
+		assert!(scan_a::<bool>("off").err().is_some());
+		assert!(scan_a::<bool>("1").err().is_some());
+		assert!(scan_a::<bool>("0").err().is_some());
 	}
 
 	#[test]
