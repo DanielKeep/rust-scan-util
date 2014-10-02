@@ -29,7 +29,15 @@ pub trait Scanner<T> {
 	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(Self, Cur), ScanError>;
 }
 
+from_str_scanner! { scan_int -> i8 as "8-bit integer" }
+from_str_scanner! { scan_int -> i16 as "16-bit integer" }
+from_str_scanner! { scan_int -> i32 as "32-bit integer" }
+from_str_scanner! { scan_int -> i64 as "64-bit integer" }
 from_str_scanner! { scan_int -> int as "integer" }
+from_str_scanner! { scan_uint -> u8 as "8-bit unsigned integer" }
+from_str_scanner! { scan_uint -> u16 as "16-bit unsigned integer" }
+from_str_scanner! { scan_uint -> u32 as "32-bit unsigned integer" }
+from_str_scanner! { scan_uint -> u64 as "64-bit unsigned integer" }
 from_str_scanner! { scan_uint -> uint as "unsigned integer" }
 
 fn next_char_at(s: &str, at: uint) -> uint {
@@ -70,6 +78,39 @@ mod test {
 
 	fn scan_a<'a, T: Scanner<T>>(s: &'a str) -> Result<(T, Cursor<'a, WordsAndInts, Ignore>), ScanError> {
 		Scanner::scan(&cur(s))
+	}
+
+	#[test]
+	fn test_sized_ints() {
+		use std::fmt::Show;
+		use std::num::{Bounded, Int, Zero};
+
+		fn test<'a, I: Int + Scanner<I> + Show>(check_past: bool) {
+			let zero: I = Zero::zero();
+			let min: I = Bounded::min_value();
+			let max: I = Bounded::max_value();
+
+			assert!(scan_a::<I>("").err().is_some());
+			assert!(scan_a::<I>("0").ok().unwrap().0 == zero);
+			assert!(scan_a::<I>(format!("{}", min).as_slice()).ok().unwrap().0 == min);
+			assert!(scan_a::<I>(format!("{}", max).as_slice()).ok().unwrap().0 == max);
+
+			if check_past {
+				let past_min: i64 = (min.to_i64()).unwrap() - 1;
+				let past_max: u64 = (max.to_u64()).unwrap() + 1;
+				assert!(scan_a::<I>(format!("{}", past_min).as_slice()).err().is_some());
+				assert!(scan_a::<I>(format!("{}", past_max).as_slice()).err().is_some());
+			}
+		}
+
+		test::<i8>(true);
+		test::<i16>(true);
+		test::<i32>(true);
+		test::<i64>(false);
+		test::<u8>(true);
+		test::<u16>(true);
+		test::<u32>(true);
+		test::<u64>(false);
 	}
 
 	#[test]
