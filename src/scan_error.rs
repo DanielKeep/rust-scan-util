@@ -1,4 +1,4 @@
-/**
+/*
 This is used to indicate why a scan has failed.
 */
 #[deriving(Show)]
@@ -9,7 +9,7 @@ pub enum ScanError {
 }
 
 impl ScanError {
-	/**
+	/*
 	Takes two `ScanError` values and returns the "most interesting" one.  The general rules are:
 
 	* An IO error takes precedence over anything else.
