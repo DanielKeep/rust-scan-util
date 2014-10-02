@@ -3,47 +3,34 @@ use std::from_str::FromStr;
 use super::ScanCursor;
 use super::{ScanError, OtherScanError};
 
+macro_rules! from_str_scanner {
+	($scan_fn:path -> $T:ty as $name:expr) => {
+		impl Scanner<$T> for $T {
+			fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<($T, Cur), ScanError> {
+				let err = |cur:&Cur| Err(OtherScanError(format!(concat!("expected ",$name,", got `{}`"), cur.tail_str()), cursor.consumed()));
+
+				let end = match $scan_fn(cursor.tail_str()) {
+					Some(i) => i,
+					None => return err(cursor)
+				};
+
+				let s = cursor.str_slice_to(end);
+				let cursor = cursor.slice_from(end);
+
+				FromStr::from_str(s)
+					.map(ref |i| Ok((i, cursor.clone())))
+					.unwrap_or_else(|| err(&cursor))
+			}
+		}
+	};
+}
+
 pub trait Scanner<T> {
 	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(Self, Cur), ScanError>;
 }
 
-impl Scanner<int> for int {
-	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(int, Cur), ScanError> {
-		let int_str_end = scan_int(cursor.tail_str());
-
-		let int_str_end = match int_str_end {
-			Some(i) => i,
-			None => {
-				return Err(OtherScanError(format!("expected integer, got `{}`", cursor.tail_str()), cursor.consumed()));
-			}
-		};
-
-		let int_str = cursor.str_slice_to(int_str_end);
-		let cursor = cursor.slice_from(int_str_end);
-
-		FromStr::from_str(int_str)
-			.map(ref |i| Ok((i, cursor.clone())))
-			.unwrap_or_else(|| Err(OtherScanError(format!("expected integer, got `{}`", int_str), cursor.consumed())))
-	}
-}
-
-impl Scanner<uint> for uint {
-	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(uint, Cur), ScanError> {
-		let err = |cur:&Cur| Err(OtherScanError(format!("expected unsigned integer, got `{}`", cur.tail_str()), cur.consumed()));
-
-		let end = match scan_uint(cursor.tail_str()) {
-			Some(i) => i,
-			None => return err(cursor)
-		};
-
-		let s = cursor.str_slice_to(end);
-		let cursor = cursor.slice_from(end);
-
-		FromStr::from_str(s)
-			.map(ref |i| Ok((i, cursor.clone())))
-			.unwrap_or_else(|| err(&cursor))
-	}
-}
+from_str_scanner! { scan_int -> int as "integer" }
+from_str_scanner! { scan_uint -> uint as "unsigned integer" }
 
 fn next_char_at(s: &str, at: uint) -> uint {
 	let ::std::str::CharRange { ch: _, next } = s.char_range_at(at);
