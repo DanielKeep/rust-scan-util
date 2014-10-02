@@ -5,8 +5,8 @@ use super::{ScanError, OtherScanError};
 
 macro_rules! from_str_scanner {
 	($scan_fn:path -> $T:ty as $name:expr) => {
-		impl Scanner<$T> for $T {
-			fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<($T, Cur), ScanError> {
+		impl<'a> Scanner<'a, $T> for $T {
+			fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<($T, Cur), ScanError> {
 				let err = |cur:&Cur| Err(OtherScanError(format!(concat!("expected ",$name,", got `{}`"), cur.tail_str()), cursor.consumed()));
 
 				let end = match $scan_fn(cursor.tail_str()) {
@@ -25,12 +25,12 @@ macro_rules! from_str_scanner {
 	};
 }
 
-pub trait Scanner<T> {
-	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(Self, Cur), ScanError>;
+pub trait Scanner<'a, T> {
+	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(Self, Cur), ScanError>;
 }
 
-impl Scanner<bool> for bool {
-	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(bool, Cur), ScanError> {
+impl<'a> Scanner<'a, bool> for bool {
+	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(bool, Cur), ScanError> {
 		cursor.expect_tok("true").map(|c| (true, c))
 			.or_else(|_| cursor.expect_tok("false").map(|c| (false, c)))
 			.or_else(|_| Err(OtherScanError(format!("expected `true` or `false`, got `{}`", cursor.tail_str()), cursor.consumed())))
@@ -131,7 +131,7 @@ mod test {
 		Cursor::new(s, WordsAndInts, Ignore)
 	}
 
-	fn scan_a<'a, T: Scanner<T>>(s: &'a str) -> Result<(T, Cursor<'a, WordsAndInts, Ignore>), ScanError> {
+	fn scan_a<'a, T: Scanner<'a, T>>(s: &'a str) -> Result<(T, Cursor<'a, WordsAndInts, Ignore>), ScanError> {
 		Scanner::scan(&cur(s))
 	}
 
@@ -153,7 +153,7 @@ mod test {
 		use std::from_str::FromStr;
 		use std::num::{Float, Zero};
 
-		fn test<F: Float + Scanner<F> + FromStr>() {
+		fn test<'a, F: Float + Scanner<'a, F> + FromStr>() {
 			let f = |v:F| v;
 			let fs = |s:&str| -> F FromStr::from_str(s).unwrap();
 			
@@ -176,7 +176,7 @@ mod test {
 		use std::fmt::Show;
 		use std::num::{Bounded, Int, Zero};
 
-		fn test<'a, I: Int + Scanner<I> + Show>(check_past: bool) {
+		fn test<'a, I: Int + Scanner<'a, I> + Show>(check_past: bool) {
 			let zero: I = Zero::zero();
 			let min: I = Bounded::min_value();
 			let max: I = Bounded::max_value();
