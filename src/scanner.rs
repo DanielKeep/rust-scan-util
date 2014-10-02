@@ -37,6 +37,8 @@ impl Scanner<bool> for bool {
 	}
 }
 
+from_str_scanner! { scan_float -> f32 as "real number" }
+from_str_scanner! { scan_float -> f64 as "real number" }
 from_str_scanner! { scan_int -> i8 as "8-bit integer" }
 from_str_scanner! { scan_int -> i16 as "16-bit integer" }
 from_str_scanner! { scan_int -> i32 as "32-bit integer" }
@@ -51,6 +53,51 @@ from_str_scanner! { scan_uint -> uint as "unsigned integer" }
 fn next_char_at(s: &str, at: uint) -> uint {
 	let ::std::str::CharRange { ch: _, next } = s.char_range_at(at);
 	next
+}
+
+fn scan_float(s: &str) -> Option<uint> {
+	enum State {
+		Start,
+		Whole,
+		Suffix,
+		ExponentStart,
+		Exponent,
+	}
+
+	let mut state = Start;
+
+	for (i,c) in s.char_indices() {
+		match state {
+			Start => {
+				assert!(i == 0);
+				match c {
+					'0'..'9' | '-' => state = Whole,
+					_ => return None
+				}
+			},
+			Whole => match c {
+				'0'..'9' => (),
+				'.' => state = Suffix,
+				'e' | 'E' => state = ExponentStart,
+				_ => return Some(i)
+			},
+			Suffix => match c {
+				'0'..'9' => (),
+				'e' | 'E' => state = ExponentStart,
+				_ => return Some(i),
+			},
+			ExponentStart => match c {
+				'+' | '-' | '0'..'9' => state = Exponent,
+				_ => return Some(i)
+			},
+			Exponent => match c {
+				'0'..'9' => (),
+				_ => return Some(i)
+			}
+		}
+	}
+
+	return Some(s.len())
 }
 
 fn scan_uint<'a>(s: &'a str) -> Option<uint> {
@@ -99,6 +146,29 @@ mod test {
 		assert!(scan_a::<bool>("off").err().is_some());
 		assert!(scan_a::<bool>("1").err().is_some());
 		assert!(scan_a::<bool>("0").err().is_some());
+	}
+
+	#[test]
+	fn test_floats() {
+		use std::from_str::FromStr;
+		use std::num::{Float, Zero};
+
+		fn test<F: Float + Scanner<F> + FromStr>() {
+			let f = |v:F| v;
+			let fs = |s:&str| -> F FromStr::from_str(s).unwrap();
+			
+			assert!(scan_a::<F>("").err().is_some());
+			assert!(scan_a::<F>("0").ok().unwrap().0 == f(Zero::zero()));
+			assert!(scan_a::<F>("0.0").ok().unwrap().0 == f(Zero::zero()));
+			assert!(scan_a::<F>("-0").ok().unwrap().0 == -f(Zero::zero()));
+			assert!(scan_a::<F>("1.0").ok().unwrap().0 == fs("1.0"));
+			assert!(scan_a::<F>("1.00").ok().unwrap().0 == fs("1.0"));
+			assert!(scan_a::<F>("1.0e0").ok().unwrap().0 == fs("1.0"));
+			assert!(scan_a::<F>("1.0e1").ok().unwrap().0 == fs("10.0"));
+		}
+
+		test::<f32>();
+		test::<f64>();
 	}
 
 	#[test]
