@@ -1,3 +1,5 @@
+use std::from_str::FromStr;
+
 use super::ScanCursor;
 use super::{ScanError, OtherScanError};
 
@@ -7,8 +9,6 @@ pub trait Scanner<T> {
 
 impl Scanner<int> for int {
 	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(int, Cur), ScanError> {
-		use std::from_str::FromStr;
-
 		let int_str_end = scan_int(cursor.tail_str());
 
 		let int_str_end = match int_str_end {
@@ -24,6 +24,24 @@ impl Scanner<int> for int {
 		FromStr::from_str(int_str)
 			.map(ref |i| Ok((i, cursor.clone())))
 			.unwrap_or_else(|| Err(OtherScanError(format!("expected integer, got `{}`", int_str), cursor.consumed())))
+	}
+}
+
+impl Scanner<uint> for uint {
+	fn scan<'a, Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(uint, Cur), ScanError> {
+		let err = |cur:&Cur| Err(OtherScanError(format!("expected unsigned integer, got `{}`", cur.tail_str()), cur.consumed()));
+
+		let end = match scan_uint(cursor.tail_str()) {
+			Some(i) => i,
+			None => return err(cursor)
+		};
+
+		let s = cursor.str_slice_to(end);
+		let cursor = cursor.slice_from(end);
+
+		FromStr::from_str(s)
+			.map(ref |i| Ok((i, cursor.clone())))
+			.unwrap_or_else(|| err(&cursor))
 	}
 }
 
@@ -80,5 +98,20 @@ mod test {
 		assert!(scan_a::<int>("-0").ok().unwrap().0 == 0);
 		assert!(scan_a::<int>("-42").ok().unwrap().0 == -42);
 		assert!(scan_a::<int>("-1_234").ok().unwrap().0 == -1);
+	}
+
+	#[test]
+	fn test_uint() {
+		assert!(scan_a::<uint>("").err().is_some());
+		assert!(scan_a::<uint>("0").ok().unwrap().0 == 0);
+		assert!(scan_a::<uint>("42").ok().unwrap().0 == 42);
+		assert!(scan_a::<uint>("1_234").ok().unwrap().0 == 1);
+		assert!(scan_a::<uint>("x").err().is_some());
+		assert!(scan_a::<uint>("0x").ok().unwrap().0 == 0);
+		assert!(scan_a::<uint>("42x").ok().unwrap().0 == 42);
+		assert!(scan_a::<uint>("-").err().is_some());
+		assert!(scan_a::<uint>("-0").err().is_some());
+		assert!(scan_a::<uint>("-42").err().is_some());
+		assert!(scan_a::<uint>("-1_234").err().is_some());
 	}
 }
