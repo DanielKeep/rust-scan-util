@@ -12,6 +12,22 @@ pub trait ScanCursor<'scanee>: Clone {
 	fn str_slice_to(&self, to: uint) -> &'scanee str;
 	fn tail_str(&self) -> &'scanee str;
 	fn is_empty(&self) -> bool;
+
+	fn expected_eof(&self) -> ScanError {
+		match self.pop_token() {
+			Some((tok, _)) => {
+				OtherScanError(format!("expected end of input, got `{}`", tok), self.consumed())
+			},
+			None => {
+				// Wait, what?  How?!
+				OtherScanError("expected end of input".into_string(), self.consumed())
+			}
+		}
+	}
+
+	fn expected_min_repeats(&self, min: uint, got: uint) -> ScanError {
+		OtherScanError(format!("expected at least {} repeats, got {}", min, got), self.consumed())
+	}
 }
 
 #[deriving(Clone, Show)]
