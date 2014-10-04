@@ -5,7 +5,7 @@ use super::{ScanError, OtherScanError};
 
 macro_rules! from_str_scanner {
 	($scan_fn:path -> $T:ty as $name:expr) => {
-		impl<'a> Scanner<'a, $T> for $T {
+		impl<'a> Scanner<'a> for $T {
 			fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<($T, Cur), ScanError> {
 				let err = |cur:&Cur| Err(OtherScanError(format!(concat!("expected ",$name,", got `{}`"), cur.tail_str()), cursor.consumed()));
 
@@ -25,11 +25,11 @@ macro_rules! from_str_scanner {
 	};
 }
 
-pub trait Scanner<'a, T> {
+pub trait Scanner<'a> {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(Self, Cur), ScanError>;
 }
 
-impl<'a> Scanner<'a, bool> for bool {
+impl<'a> Scanner<'a> for bool {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(bool, Cur), ScanError> {
 		cursor.expect_tok("true").map(|c| (true, c))
 			.or_else(|_| cursor.expect_tok("false").map(|c| (false, c)))
@@ -37,7 +37,7 @@ impl<'a> Scanner<'a, bool> for bool {
 	}
 }
 
-impl<'a> Scanner<'a, char> for char {
+impl<'a> Scanner<'a> for char {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(char, Cur), ScanError> {
 		let s = cursor.tail_str();
 		if s.len() == 0 {
@@ -49,7 +49,7 @@ impl<'a> Scanner<'a, char> for char {
 	}
 }
 
-impl<'a> Scanner<'a, &'a str> for &'a str {
+impl<'a> Scanner<'a> for &'a str {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(&'a str, Cur), ScanError> {
 		cursor.pop_token().map(|sc| Ok(sc))
 			.unwrap_or_else(|| Err(OtherScanError("expected token".into_string(), cursor.consumed())))
