@@ -18,7 +18,7 @@ macro_rules! from_str_scanner {
 				let cursor = cursor.slice_from(end);
 
 				FromStr::from_str(s)
-					.map(ref |i| Ok((i, cursor.clone())))
+					.map(|i| Ok((i, cursor.clone())))
 					.unwrap_or_else(|| err(&cursor))
 			}
 		}
@@ -90,27 +90,27 @@ fn scan_float(s: &str) -> Option<uint> {
 			Start => {
 				assert!(i == 0);
 				match c {
-					'0'..'9' | '-' => state = Whole,
+					'0'...'9' | '-' => state = Whole,
 					_ => return None
 				}
 			},
 			Whole => match c {
-				'0'..'9' => (),
+				'0'...'9' => (),
 				'.' => state = Suffix,
 				'e' | 'E' => state = ExponentStart,
 				_ => return Some(i)
 			},
 			Suffix => match c {
-				'0'..'9' => (),
+				'0'...'9' => (),
 				'e' | 'E' => state = ExponentStart,
 				_ => return Some(i),
 			},
 			ExponentStart => match c {
-				'+' | '-' | '0'..'9' => state = Exponent,
+				'+' | '-' | '0'...'9' => state = Exponent,
 				_ => return Some(i)
 			},
 			Exponent => match c {
-				'0'..'9' => (),
+				'0'...'9' => (),
 				_ => return Some(i)
 			}
 		}
