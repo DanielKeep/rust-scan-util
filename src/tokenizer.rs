@@ -25,3 +25,20 @@ impl Tokenizer for WordsAndInts {
 		}
 	}
 }
+
+#[test]
+fn test_words_and_ints() {
+	let tl = |s:&str| WordsAndInts.token_len(s);
+
+	assert_eq!(tl(""), None);
+	assert_eq!(tl("_"), None);
+	assert_eq!(tl("abc"), Some(3));
+	assert_eq!(tl("abc def"), Some(3));
+	assert_eq!(tl("abc123"), Some(3));
+	assert_eq!(tl("abc_def"), Some(3));
+	assert_eq!(tl("123"), Some(3));
+	assert_eq!(tl("123 456"), Some(3));
+	assert_eq!(tl("123abc"), Some(3));
+	assert_eq!(tl("123_456"), Some(3));
+	assert_eq!(tl("123.456"), Some(3));
+}
