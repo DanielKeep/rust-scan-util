@@ -56,6 +56,12 @@ impl<'a> Scanner<'a> for &'a str {
 	}
 }
 
+impl<'a> Scanner<'a> for () {
+	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<((), Cur), ScanError> {
+		Ok(((), cursor.clone()))
+	}
+}
+
 from_str_scanner! { scan_float -> f32 as "real number" }
 from_str_scanner! { scan_float -> f64 as "real number" }
 from_str_scanner! { scan_int -> i8 as "8-bit integer" }
