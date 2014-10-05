@@ -10,6 +10,7 @@ pub use tokenizer::Tokenizer;
 pub use whitespace::Whitespace;
 
 pub mod cursor;
+pub mod io;
 pub mod scan_error;
 pub mod scanner;
 pub mod tokenizer;
