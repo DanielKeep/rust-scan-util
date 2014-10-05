@@ -150,7 +150,7 @@ mod test {
 		Cursor::new(s, WordsAndInts, Ignore)
 	}
 
-	fn scan_a<'a, T: Scanner<'a, T>>(s: &'a str) -> Result<(T, Cursor<'a, WordsAndInts, Ignore>), ScanError> {
+	fn scan_a<'a, T: Scanner<'a>>(s: &'a str) -> Result<(T, Cursor<'a, WordsAndInts, Ignore>), ScanError> {
 		Scanner::scan(&cur(s))
 	}
 
@@ -180,7 +180,7 @@ mod test {
 		use std::from_str::FromStr;
 		use std::num::{Float, Zero};
 
-		fn test<'a, F: Float + Scanner<'a, F> + FromStr>() {
+		fn test<'a, F: Float + Scanner<'a> + FromStr>() {
 			let f = |v:F| v;
 			let fs = |s:&str| -> F FromStr::from_str(s).unwrap();
 			
@@ -203,7 +203,7 @@ mod test {
 		use std::fmt::Show;
 		use std::num::{Bounded, Int, Zero};
 
-		fn test<'a, I: Int + Scanner<'a, I> + Show>(check_past: bool) {
+		fn test<'a, I: Int + Scanner<'a> + Show>(check_past: bool) {
 			let zero: I = Zero::zero();
 			let min: I = Bounded::min_value();
 			let max: I = Bounded::max_value();
