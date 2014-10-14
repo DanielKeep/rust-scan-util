@@ -13,16 +13,47 @@ pub trait ScanCursor<'scanee>: Clone + Eq {
 	fn tail_str(&self) -> &'scanee str;
 	fn is_empty(&self) -> bool;
 
-	fn expected_eof(&self) -> ScanError {
-		match self.pop_token() {
-			Some((tok, _)) => {
-				OtherScanError(format!("expected end of input, got `{}`", tok), self.consumed())
-			},
-			None => {
-				// Wait, what?  How?!
-				OtherScanError("expected end of input".into_string(), self.consumed())
-			}
+	fn expect_eof(&self) -> Result<(), ScanError> {
+		if self.pop_token().is_some() {
+			Err(self.expected_eof())
+		} else {
+			Ok(())
 		}
+	}
+
+	fn expected(&self, desc: &str) -> ScanError {
+		let msg = match self.pop_token() {
+			Some((got, _)) => format!("expected {}, got `{}`", desc, got),
+			None => format!("expected {}, got end of input", desc)
+		};
+
+		OtherScanError(msg, self.consumed())
+	}
+
+	fn expected_tok(&self, tok: &str) -> ScanError {
+		let toks = [tok];
+		self.expected_one_of(&toks)
+	}
+
+	fn expected_eof(&self) -> ScanError {
+		self.expected_one_of(&[])
+	}
+
+	fn expected_one_of(&self, toks: &[&str]) -> ScanError {
+		let mut toks = toks.iter().map(|s| format!("`{}`", s));
+		let toks = {
+			let first = toks.next();
+			first.map(|first| toks.fold(first, |a,b| format!("{}, {}", a, b)))
+		};
+
+		let msg = match (toks, self.pop_token()) {
+			(Some(exp), Some((got, _))) => format!("expected {}, got `{}`", exp, got),
+			(Some(exp), None) => format!("expected {}, got end of input", exp),
+			(None, Some((got, _))) => format!("expected end of input, got `{}`", got),
+			(None, None) => "expected end of input".into_string()
+		};
+
+		OtherScanError(msg, self.consumed())
 	}
 
 	fn expected_min_repeats(&self, min: uint, got: uint) -> ScanError {
@@ -53,14 +84,8 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace> ScanCursor<'a> for Cursor<'a, Tok, Sp> 
 	fn expect_tok(&self, s: &str) -> Result<Cursor<'a, Tok, Sp>, ScanError> {
 		debug!("{}.expect_tok({})", self, s);
 		match self.pop_token() {
-			None => Err(OtherScanError(format!("expected `{}`, found end of input", s), self.offset)),
-			Some((tok, cur)) => {
-				return if eq_ignore_case(s, tok) {
-					Ok(cur)
-				} else {
-					Err(OtherScanError(format!("expected `{}`, got `{}`", s, tok), self.offset))
-				}
-			}
+			Some((tok, ref cur)) if eq_ignore_case(s, tok) => Ok(cur.clone()),
+			_ => Err(self.expected_tok(s))
 		}
 	}
 

@@ -1,17 +1,16 @@
 use std::from_str::FromStr;
 
-use super::ScanCursor;
-use super::{ScanError, OtherScanError};
+use super::{ScanCursor, ScanError};
 
 macro_rules! from_str_scanner {
 	($scan_fn:path -> $T:ty as $name:expr) => {
 		impl<'a> Scanner<'a> for $T {
 			fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<($T, Cur), ScanError> {
-				let err = |cur:&Cur| Err(OtherScanError(format!(concat!("expected ",$name,", got `{}`"), cur.tail_str()), cursor.consumed()));
+				let err = || Err(cursor.expected($name));
 
 				let end = match $scan_fn(cursor.tail_str()) {
 					Some(i) => i,
-					None => return err(cursor)
+					None => return err()
 				};
 
 				let s = cursor.str_slice_to(end);
@@ -19,7 +18,7 @@ macro_rules! from_str_scanner {
 
 				FromStr::from_str(s)
 					.map(|i| Ok((i, cursor.clone())))
-					.unwrap_or_else(|| err(&cursor))
+					.unwrap_or_else(err)
 			}
 		}
 	};
@@ -33,7 +32,7 @@ impl<'a> Scanner<'a> for bool {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(bool, Cur), ScanError> {
 		cursor.expect_tok("true").map(|c| (true, c))
 			.or_else(|_| cursor.expect_tok("false").map(|c| (false, c)))
-			.or_else(|_| Err(OtherScanError(format!("expected `true` or `false`, got `{}`", cursor.tail_str()), cursor.consumed())))
+			.or_else(|_| Err(cursor.expected("`true` or `false`")))
 	}
 }
 
@@ -41,7 +40,7 @@ impl<'a> Scanner<'a> for char {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(char, Cur), ScanError> {
 		let s = cursor.tail_str();
 		if s.len() == 0 {
-			Err(OtherScanError("expected character".into_string(), cursor.consumed()))
+			Err(cursor.expected("character"))
 		} else {
 			let ::std::str::CharRange { ch, next } = s.char_range_at(0);
 			Ok((ch, cursor.slice_from(next)))
@@ -52,7 +51,7 @@ impl<'a> Scanner<'a> for char {
 impl<'a> Scanner<'a> for &'a str {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(&'a str, Cur), ScanError> {
 		cursor.pop_token().map(|sc| Ok(sc))
-			.unwrap_or_else(|| Err(OtherScanError("expected token".into_string(), cursor.consumed())))
+			.unwrap_or_else(|| Err(cursor.expected("any token")))
 	}
 }
 
