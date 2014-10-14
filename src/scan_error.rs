@@ -1,3 +1,6 @@
+use std::fmt;
+use std::fmt::{Formatter, FormatError};
+
 /*
 This is used to indicate why a scan has failed.
 */
@@ -26,6 +29,16 @@ impl ScanError {
 					OtherScanError(msgb, offb)
 				}
 			}
+		}
+	}
+}
+
+impl fmt::String for ScanError {
+	fn fmt(&self, f: &mut Formatter) -> Result<(), FormatError> {
+		match self {
+			&NothingMatched => write!(f, "nothing matched"),
+			&OtherScanError(ref msg, at) => write!(f, "at offset {}: {}", at, msg),
+			&ScanIoError(ref err) => write!(f, "io error: {}", err),
 		}
 	}
 }
