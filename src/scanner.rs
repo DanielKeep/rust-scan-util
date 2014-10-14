@@ -2,7 +2,8 @@ use std::from_str::FromStr;
 
 use super::{ScanCursor, ScanError};
 
-macro_rules! from_str_scanner {
+#[macro_export]
+macro_rules! from_str_slice_scanner {
 	($scan_fn:path -> $T:ty as $name:expr) => {
 		impl<'a> Scanner<'a> for $T {
 			fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<($T, Cur), ScanError> {
@@ -61,25 +62,25 @@ impl<'a> Scanner<'a> for () {
 	}
 }
 
-from_str_scanner! { scan_float -> f32 as "real number" }
-from_str_scanner! { scan_float -> f64 as "real number" }
-from_str_scanner! { scan_int -> i8 as "8-bit integer" }
-from_str_scanner! { scan_int -> i16 as "16-bit integer" }
-from_str_scanner! { scan_int -> i32 as "32-bit integer" }
-from_str_scanner! { scan_int -> i64 as "64-bit integer" }
-from_str_scanner! { scan_int -> int as "integer" }
-from_str_scanner! { scan_uint -> u8 as "8-bit unsigned integer" }
-from_str_scanner! { scan_uint -> u16 as "16-bit unsigned integer" }
-from_str_scanner! { scan_uint -> u32 as "32-bit unsigned integer" }
-from_str_scanner! { scan_uint -> u64 as "64-bit unsigned integer" }
-from_str_scanner! { scan_uint -> uint as "unsigned integer" }
+from_str_slice_scanner! { scan_float -> f32 as "real number" }
+from_str_slice_scanner! { scan_float -> f64 as "real number" }
+from_str_slice_scanner! { scan_int -> i8 as "8-bit integer" }
+from_str_slice_scanner! { scan_int -> i16 as "16-bit integer" }
+from_str_slice_scanner! { scan_int -> i32 as "32-bit integer" }
+from_str_slice_scanner! { scan_int -> i64 as "64-bit integer" }
+from_str_slice_scanner! { scan_int -> int as "integer" }
+from_str_slice_scanner! { scan_uint -> u8 as "8-bit unsigned integer" }
+from_str_slice_scanner! { scan_uint -> u16 as "16-bit unsigned integer" }
+from_str_slice_scanner! { scan_uint -> u32 as "32-bit unsigned integer" }
+from_str_slice_scanner! { scan_uint -> u64 as "64-bit unsigned integer" }
+from_str_slice_scanner! { scan_uint -> uint as "unsigned integer" }
 
-fn next_char_at(s: &str, at: uint) -> uint {
+pub fn next_char_at(s: &str, at: uint) -> uint {
 	let ::std::str::CharRange { ch: _, next } = s.char_range_at(at);
 	next
 }
 
-fn scan_float(s: &str) -> Option<uint> {
+pub fn scan_float(s: &str) -> Option<uint> {
 	enum State {
 		Start,
 		Whole,
@@ -124,14 +125,14 @@ fn scan_float(s: &str) -> Option<uint> {
 	return Some(s.len())
 }
 
-fn scan_uint<'a>(s: &'a str) -> Option<uint> {
+pub fn scan_uint<'a>(s: &'a str) -> Option<uint> {
 	s.char_indices()
 		.take_while(|&(_,c)| '0' <= c && c <= '9')
 		.map(|(i,_)| Some(next_char_at(s, i)))
 		.last().unwrap_or(None)
 }
 
-fn scan_int<'a>(s: &'a str) -> Option<uint> {
+pub fn scan_int<'a>(s: &'a str) -> Option<uint> {
 	if s.len() == 0 { return None }
 
 	let (s, off) = if s.char_at(0) == '-' {
