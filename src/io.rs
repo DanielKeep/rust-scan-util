@@ -12,13 +12,20 @@ Note that this function *does not* support old-school Mac OS newlines (i.e. a si
 pub fn read_line<R: Reader>(r: &mut R) -> IoResult<String> {
 	let mut line = String::new();
 	loop {
-		match try!(read_utf8_char(r)) {
-			'\n' => {
+		match read_utf8_char(r) {
+			Ok('\n') => {
 				line.push('\n');
 				break;
 			},
-			c => {
+			Ok(c) => {
 				line.push(c);
+			}
+			Err(err) => {
+				if err.kind == ::std::io::EndOfFile && line.len() > 0 {
+					break
+				} else {
+					return Err(err)
+				}
 			}
 		}
 	}
