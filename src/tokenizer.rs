@@ -1,11 +1,11 @@
 use std::default::Default;
 use super::len_while;
 
-pub trait Tokenizer: Clone + Default + ::std::fmt::Show {
+pub trait Tokenizer: Clone + Default + Eq + ::std::fmt::Show {
 	fn token_len(&self, s: &str) -> Option<uint>;
 }
 
-#[deriving(Clone, Default, Show)]
+#[deriving(Clone, Default, Eq, PartialEq, Show)]
 pub struct WordsAndInts;
 
 impl Tokenizer for WordsAndInts {
@@ -43,7 +43,7 @@ fn test_words_and_ints() {
 	assert_eq!(tl("123.456"), Some(3));
 }
 
-#[deriving(Clone, Default, Show)]
+#[deriving(Clone, Default, Eq, PartialEq, Show)]
 pub struct IdentsAndInts;
 
 impl Tokenizer for IdentsAndInts {
@@ -83,7 +83,7 @@ fn test_idents_and_ints() {
 	assert_eq!(tl("123.456"), Some(3));
 }
 
-#[deriving(Clone, Default, Show)]
+#[deriving(Clone, Default, Eq, PartialEq, Show)]
 pub struct SpaceDelimited;
 
 impl Tokenizer for SpaceDelimited {
@@ -116,7 +116,7 @@ fn test_space_delimited() {
 	assert_eq!(tl("123.456"), Some(7));
 }
 
-#[deriving(Clone, Default, Show)]
+#[deriving(Clone, Default, Eq, PartialEq, Show)]
 pub struct Explicit;
 
 impl Tokenizer for Explicit {

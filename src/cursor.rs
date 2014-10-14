@@ -3,7 +3,7 @@ use super::{ScanError, OtherScanError};
 
 use std::str::CharRange;
 
-pub trait ScanCursor<'scanee>: Clone {
+pub trait ScanCursor<'scanee>: Clone + Eq {
 	fn expect_tok(&self, s: &str) -> Result<Self, ScanError>;
 	fn consumed(&self) -> uint;
 	fn pop_token(&self) -> Option<(&'scanee str, Self)>;
@@ -30,7 +30,7 @@ pub trait ScanCursor<'scanee>: Clone {
 	}
 }
 
-#[deriving(Clone, Show)]
+#[deriving(Clone, Eq, PartialEq, Show)]
 pub struct Cursor<'a, Tok: Tokenizer, Sp: Whitespace> {
 	slice: &'a str,
 	offset: uint,

@@ -1,7 +1,7 @@
 /*
 This is used to indicate why a scan has failed.
 */
-#[deriving(Show)]
+#[deriving(Clone, Eq, PartialEq, Show)]
 pub enum ScanError {
 	NothingMatched,
 	OtherScanError(String, uint),
