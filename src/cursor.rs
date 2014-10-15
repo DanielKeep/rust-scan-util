@@ -10,6 +10,7 @@ pub trait ScanCursor<'scanee>: Clone + Eq {
 	fn pop_ws(&self) -> Self;
 	fn slice_from(&self, from: uint) -> Self;
 	fn str_slice_to(&self, to: uint) -> &'scanee str;
+	fn str_slice_to_cur(&self, to: &Self) -> &'scanee str;
 	fn tail_str(&self) -> &'scanee str;
 	fn is_empty(&self) -> bool;
 
@@ -137,6 +138,10 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace> ScanCursor<'a> for Cursor<'a, Tok, Sp> 
 
 	fn str_slice_to(&self, to: uint) -> &'a str {
 		self.tail_str().slice_to(to)
+	}
+
+	fn str_slice_to_cur(&self, to: &Cursor<'a, Tok, Sp>) -> &'a str {
+		self.slice.slice(self.offset, to.offset)
 	}
 
 	fn tail_str(&self) -> &'a str {
