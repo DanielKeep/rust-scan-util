@@ -1,6 +1,8 @@
 use std::fmt;
 use std::fmt::{Formatter, FormatError};
 
+pub type ScanResult<T> = Result<T, ScanError>;
+
 /*
 This is used to indicate why a scan has failed.
 */

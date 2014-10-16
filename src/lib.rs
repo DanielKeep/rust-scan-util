@@ -4,7 +4,7 @@
 #[phase(plugin, link)] extern crate log;
 
 pub use cursor::{Cursor, ScanCursor};
-pub use scan_error::{ScanError, NothingMatched, OtherScanError, ScanIoError};
+pub use scan_error::{ScanResult, ScanError, NothingMatched, OtherScanError, ScanIoError};
 pub use scanner::Scanner;
 pub use tokenizer::Tokenizer;
 pub use whitespace::Whitespace;
