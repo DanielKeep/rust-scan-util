@@ -56,6 +56,13 @@ impl<'a> Scanner<'a> for &'a str {
 	}
 }
 
+impl<'a> Scanner<'a> for String {
+	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(String, Cur), ScanError> {
+		cursor.pop_token().map(|(s,c)| Ok((s.into_string(), c)))
+			.unwrap_or_else(|| Err(cursor.expected("any token")))
+	}
+}
+
 impl<'a> Scanner<'a> for () {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<((), Cur), ScanError> {
 		Ok(((), cursor.clone()))
