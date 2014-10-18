@@ -1,4 +1,4 @@
-use super::{Tokenizer, Whitespace};
+use super::{Tokenizer, Whitespace, CompareStrs};
 use super::{ScanError, OtherScanError};
 
 use std::str::CharRange;
@@ -13,6 +13,7 @@ pub trait ScanCursor<'scanee>: Clone + Eq {
 	fn str_slice_to_cur(&self, to: &Self) -> &'scanee str;
 	fn tail_str(&self) -> &'scanee str;
 	fn is_empty(&self) -> bool;
+	fn compare_strs(&self, a: &str, b: &str) -> bool;
 
 	fn expect_eof(&self) -> Result<(), ScanError> {
 		if self.pop_token().is_some() {
@@ -63,29 +64,31 @@ pub trait ScanCursor<'scanee>: Clone + Eq {
 }
 
 #[deriving(Clone, Eq, PartialEq, Show)]
-pub struct Cursor<'a, Tok: Tokenizer, Sp: Whitespace> {
+pub struct Cursor<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> {
 	slice: &'a str,
 	offset: uint,
 	tc: Tok,
 	sp: Sp,
+	cs: Cs,
 }
 
-impl<'a, Tok: Tokenizer, Sp: Whitespace> Cursor<'a, Tok, Sp> {
-	pub fn new<'b>(s: &'b str, tc: Tok, sp: Sp) -> Cursor<'b, Tok, Sp> {
+impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> Cursor<'a, Tok, Sp, Cs> {
+	pub fn new<'b>(s: &'b str, tc: Tok, sp: Sp, cs: Cs) -> Cursor<'b, Tok, Sp, Cs> {
 		Cursor {
 			slice: s,
 			offset: 0,
 			tc: tc,
 			sp: sp,
+			cs: cs,
 		}
 	}
 }
 
-impl<'a, Tok: Tokenizer, Sp: Whitespace> ScanCursor<'a> for Cursor<'a, Tok, Sp> {
-	fn expect_tok(&self, s: &str) -> Result<Cursor<'a, Tok, Sp>, ScanError> {
+impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> ScanCursor<'a> for Cursor<'a, Tok, Sp, Cs> {
+	fn expect_tok(&self, s: &str) -> Result<Cursor<'a, Tok, Sp, Cs>, ScanError> {
 		debug!("{}.expect_tok({})", self, s);
 		match self.pop_token() {
-			Some((tok, ref cur)) if eq_ignore_case(s, tok) => Ok(cur.clone()),
+			Some((tok, ref cur)) if self.compare_strs(s, tok) => Ok(cur.clone()),
 			_ => Err(self.expected_tok(s))
 		}
 	}
@@ -94,7 +97,7 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace> ScanCursor<'a> for Cursor<'a, Tok, Sp> 
 		self.offset
 	}
 
-	fn pop_token(&self) -> Option<(&'a str, Cursor<'a, Tok, Sp>)> {
+	fn pop_token(&self) -> Option<(&'a str, Cursor<'a, Tok, Sp, Cs>)> {
 		debug!("{}.pop_token()", self);
 		let cur = self;
 
@@ -123,13 +126,13 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace> ScanCursor<'a> for Cursor<'a, Tok, Sp> 
 		}
 	}
 
-	fn pop_ws(&self) -> Cursor<'a, Tok, Sp> {
+	fn pop_ws(&self) -> Cursor<'a, Tok, Sp, Cs> {
 		debug!("{}.pop_ws()", self);
 
 		self.slice_from(self.sp.strip_len(self.tail_str()))
 	}
 
-	fn slice_from(&self, from: uint) -> Cursor<'a, Tok, Sp> {
+	fn slice_from(&self, from: uint) -> Cursor<'a, Tok, Sp, Cs> {
 		Cursor {
 			offset: ::std::cmp::min(self.slice.len(), self.offset + from),
 			..self.clone()
@@ -140,7 +143,7 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace> ScanCursor<'a> for Cursor<'a, Tok, Sp> 
 		self.tail_str().slice_to(to)
 	}
 
-	fn str_slice_to_cur(&self, to: &Cursor<'a, Tok, Sp>) -> &'a str {
+	fn str_slice_to_cur(&self, to: &Cursor<'a, Tok, Sp, Cs>) -> &'a str {
 		self.slice.slice(self.offset, to.offset)
 	}
 
@@ -151,13 +154,8 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace> ScanCursor<'a> for Cursor<'a, Tok, Sp> 
 	fn is_empty(&self) -> bool {
 		self.offset == self.slice.len()
 	}
-}
 
-fn eq_ignore_case<S: Str, T: Str>(left: S, right: T) -> bool {
-	let left = left.as_slice();
-	let right = right.as_slice();
-
-	(left.len() == right.len() 
-		&& (left.chars().zip(right.chars())
-			.all(|(l,r)| l.to_lowercase() == r.to_lowercase())))
+	fn compare_strs(&self, a: &str, b: &str) -> bool {
+		self.cs.compare_strs(a, b)
+	}
 }

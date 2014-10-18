@@ -158,12 +158,13 @@ mod test {
 	use super::Scanner;
 	use tokenizer::WordsAndInts;
 	use whitespace::Ignore;
+	use compare_strs::CaseInsensitive;
 
-	fn cur<'a>(s: &'a str) -> Cursor<'a, WordsAndInts, Ignore> {
-		Cursor::new(s, WordsAndInts, Ignore)
+	fn cur<'a>(s: &'a str) -> Cursor<'a, WordsAndInts, Ignore, CaseInsensitive> {
+		Cursor::new(s, WordsAndInts, Ignore, CaseInsensitive)
 	}
 
-	fn scan_a<'a, T: Scanner<'a>>(s: &'a str) -> Result<(T, Cursor<'a, WordsAndInts, Ignore>), ScanError> {
+	fn scan_a<'a, T: Scanner<'a>>(s: &'a str) -> Result<(T, Cursor<'a, WordsAndInts, Ignore, CaseInsensitive>), ScanError> {
 		Scanner::scan(&cur(s))
 	}
 

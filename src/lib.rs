@@ -3,12 +3,14 @@
 
 #[phase(plugin, link)] extern crate log;
 
+pub use compare_strs::CompareStrs;
 pub use cursor::{Cursor, ScanCursor};
 pub use scan_error::{ScanResult, ScanError, NothingMatched, OtherScanError, ScanIoError};
 pub use scanner::Scanner;
 pub use tokenizer::Tokenizer;
 pub use whitespace::Whitespace;
 
+pub mod compare_strs;
 pub mod cursor;
 pub mod io;
 pub mod scan_error;
