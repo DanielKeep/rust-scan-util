@@ -112,21 +112,31 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> ScanCursor<'a> for Cur
 
 		// Next, check to see if there is a whitespace token.  This allows the space policy to do things like ignore most whitespace, but turn line breaks into explicit tokens.  Note that unlike the regular Tokenizer, the Whitespace policy is responsible for returning the str slice itself.  This is used to do things like map all whitespace to a single `" "` token.
 		match self.sp.token_len(cur.tail_str()) {
-			Some(end) => return Some((cur.str_slice_to(end), cur.slice_from(end))),
+			Some((end, s)) => {
+				debug!("{}.pop_token - sp token `{}`", self, s.escape_default());
+				return Some((s, cur.slice_from(end)));
+			},
 			None => ()
 		}
 
 		// Do not assume that empty input means we can't match a token; the token class might, for example, turn end-of-input into an explicit token.
 		let tail_str = cur.tail_str();
 		match self.tc.token_len(tail_str) {
-			Some(end) => Some((cur.str_slice_to(end), cur.slice_from(end))),
+			Some(end) => {
+				let tok = cur.str_slice_to(end);
+				debug!("{}.pop_token - token `{}`", self, tok.escape_default());
+				Some((tok, cur.slice_from(end)))
+			},
 			None => {
 				// One of two things: either we have some input left and will thus return a single-character token, or there is nothing left whereby we return None.
 				if cur.is_empty() {
+					debug!("{}.pop_token - no token", self);
 					return None;
 				} else {
 					let CharRange { ch: _, next } = tail_str.char_range_at(0);
-					Some((cur.str_slice_to(next), cur.slice_from(next)))
+					let tok = cur.str_slice_to(next);
+					debug!("{}.pop_token - def token `{}`", self, tok.escape_default());
+					Some((tok, cur.slice_from(next)))
 				}
 			},
 		}
