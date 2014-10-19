@@ -1,6 +1,7 @@
 use super::{Tokenizer, Whitespace, CompareStrs};
 use super::{ScanError, OtherScanError};
 
+use std::fmt::{Show, Formatter, FormatError};
 use std::str::CharRange;
 
 pub trait ScanCursor<'scanee>: Clone + Eq {
@@ -63,7 +64,7 @@ pub trait ScanCursor<'scanee>: Clone + Eq {
 	}
 }
 
-#[deriving(Clone, Eq, PartialEq, Show)]
+#[deriving(Clone, Eq, PartialEq)]
 pub struct Cursor<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> {
 	slice: &'a str,
 	offset: uint,
@@ -81,6 +82,13 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> Cursor<'a, Tok, Sp, Cs
 			sp: sp,
 			cs: cs,
 		}
+	}
+}
+
+impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> Show for Cursor<'a, Tok, Sp, Cs> {
+	fn fmt(&self, f: &mut Formatter) -> Result<(), FormatError> {
+		try!(write!(f, "Cursor<{}, {}, {}> {{ offset: {}, .. }}", self.tc, self.sp, self.cs, self.offset));
+		Ok(())
 	}
 }
 
