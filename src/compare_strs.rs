@@ -1,8 +1,7 @@
 use std::ascii::AsciiExt;
-use std::default::Default;
 use std::fmt::Show;
 
-pub trait CompareStrs: Clone + Default + Eq + Show {
+pub trait CompareStrs: Clone + Eq + Show {
 	fn compare_strs<'a>(&self, a: &str, b: &str) -> bool;
 }
 

@@ -1,7 +1,6 @@
 use super::len_while;
-use std::default::Default;
 
-pub trait Whitespace: Clone + Default + Eq + ::std::fmt::Show {
+pub trait Whitespace: Clone + Eq + ::std::fmt::Show {
 	fn strip_len(&self, s: &str) -> uint;
 
 	fn token_len<'a>(&self, _: &'a str) -> Option<(uint, &'a str)> {

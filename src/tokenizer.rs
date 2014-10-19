@@ -1,7 +1,6 @@
-use std::default::Default;
 use super::len_while;
 
-pub trait Tokenizer: Clone + Default + Eq + ::std::fmt::Show {
+pub trait Tokenizer: Clone + Eq + ::std::fmt::Show {
 	fn token_len(&self, s: &str) -> Option<uint>;
 }
 
