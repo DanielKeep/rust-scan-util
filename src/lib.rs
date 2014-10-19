@@ -5,7 +5,7 @@
 
 pub use compare_strs::CompareStrs;
 pub use cursor::{Cursor, ScanCursor};
-pub use scan_error::{ScanResult, ScanError, NothingMatched, OtherScanError, ScanIoError};
+pub use scan_error::{ScanResult, ScanError, OtherScanError, ScanIoError};
 pub use scanner::Scanner;
 pub use tokenizer::Tokenizer;
 pub use whitespace::Whitespace;

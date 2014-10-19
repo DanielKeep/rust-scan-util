@@ -8,7 +8,6 @@ This is used to indicate why a scan has failed.
 */
 #[deriving(Clone, Eq, PartialEq, Show)]
 pub enum ScanError {
-	NothingMatched,
 	OtherScanError(String, uint),
 	ScanIoError(::std::io::IoError),
 }
@@ -23,7 +22,6 @@ impl ScanError {
 	pub fn or(self, other: ScanError) -> ScanError {
 		match (self, other) {
 			(ScanIoError(ioerr), _) | (_, ScanIoError(ioerr)) => ScanIoError(ioerr),
-			(NothingMatched, other) | (other, NothingMatched) => other,
 			(OtherScanError(msga, offa), OtherScanError(msgb, offb)) => {
 				if offa > offb {
 					OtherScanError(msga, offa)
@@ -38,7 +36,6 @@ impl ScanError {
 impl fmt::String for ScanError {
 	fn fmt(&self, f: &mut Formatter) -> Result<(), FormatError> {
 		match self {
-			&NothingMatched => write!(f, "nothing matched"),
 			&OtherScanError(ref msg, at) => write!(f, "at offset {}: {}", at, msg),
 			&ScanIoError(ref err) => write!(f, "io error: {}", err),
 		}
