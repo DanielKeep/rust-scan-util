@@ -99,16 +99,14 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> ScanCursor<'a> for Cur
 
 	fn pop_token(&self) -> Option<(&'a str, Cursor<'a, Tok, Sp, Cs>)> {
 		debug!("{}.pop_token()", self);
-		let cur = self;
+		// First, strip out leading whitespace.  It's up to the whitespace policy to *not* strip characters it wants to turn into a token.
+		let cur = self.pop_ws();
 
-		// First, check to see if there is a whitespace token.  This allows the space policy to do things like ignore most whitespace, but turn line breaks into explicit tokens.
+		// Next, check to see if there is a whitespace token.  This allows the space policy to do things like ignore most whitespace, but turn line breaks into explicit tokens.  Note that unlike the regular Tokenizer, the Whitespace policy is responsible for returning the str slice itself.  This is used to do things like map all whitespace to a single `" "` token.
 		match self.sp.token_len(cur.tail_str()) {
 			Some(end) => return Some((cur.str_slice_to(end), cur.slice_from(end))),
 			None => ()
 		}
-
-		// If that didn't work, strip out leading whitespace.
-		let cur = self.pop_ws();
 
 		// Do not assume that empty input means we can't match a token; the token class might, for example, turn end-of-input into an explicit token.
 		let tail_str = cur.tail_str();
