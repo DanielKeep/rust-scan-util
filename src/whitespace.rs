@@ -1,13 +1,32 @@
+/*!
+This module provides the `Whitespace` trait and its implementations.
+*/
 use super::len_while;
 
+/**
+Implementations of the `Whitespace` trait are responsible for controlling when whitespace can be skipped, and when to turn whitespace into an explicit token.
+*/
 pub trait Whitespace: Clone + Eq + ::std::fmt::Show {
+	/**
+Indicates how many bytes at the start of the given string are "skippable" whitespace.
+	*/
 	fn strip_len(&self, s: &str) -> uint;
 
+	/**
+Indicates the length of an explicit whitespace token at the start of the given string, and what its contents should be, if one exists at all.
+
+For example, if the implementing policy is to collapse all runs of non-newline whitespace together, the result of calling this on `"  \t \t\n \t x  y  "` would be `Some(5, " ")`.  The output string slice has the lifetime of the input string so that implementations can return *either* a static string *or* a slice of the input.
+
+The default implementation provided assumes that there are no explicit whitespace tokens, and always returns `None`.
+	*/
 	fn token_len<'a>(&self, _: &'a str) -> Option<(uint, &'a str)> {
 		None
 	}
 }
 
+/**
+This policy simply skips over all codepoints that satisfy the `White_Space` property.
+*/
 #[deriving(Clone, Default, Eq, PartialEq, Show)]
 pub struct Ignore;
 
@@ -32,6 +51,9 @@ fn test_ws_ignore() {
 	assert_eq!(sp(" \t\r\n  x "), (6, None));
 }
 
+/**
+This policy simply skips over all codepoints that satisfy the `White_Space` property, *except* for line terminators, which become an explicit `"\n"` token.
+*/
 #[deriving(Clone, Default, Eq, PartialEq, Show)]
 pub struct ExplicitNewline;
 
@@ -66,6 +88,12 @@ fn test_ws_explicit_newline() {
 	assert_eq!(sp(" \t\r\n  x "), (2, None));
 }
 
+/**
+This policy does not skip any whitespace, instead creating explicit tokens in two situations:
+
+- Single newline sequences (i.e. `\r\n`, `\r` or `\n`) become a single `"\n"` token.
+- Runs of all other whitespace are collapsed to a single `" "` token.
+*/
 #[deriving(Clone, Default, Eq, PartialEq, Show)]
 pub struct Explicit;
 
@@ -100,6 +128,9 @@ fn test_ws_explicit() {
 	assert_eq!(sp(" \t\r\n  x "), (0, Some((2, " "))));
 }
 
+/**
+This policy collapses all runs of code points satisfying the `White_Space` property into a single `" "` token, including newlines.
+*/
 #[deriving(Clone, Default, Eq, PartialEq, Show)]
 pub struct ExplicitAny;
 
@@ -128,6 +159,9 @@ fn test_ws_explicit_any() {
 	assert_eq!(sp(" \t\r\n  x "), (0, Some((6, " "))));
 }
 
+/**
+This policy turns newline sequences and all whitespace code points into individual tokens.  That is, tab and space produce different tokens, as do Windows newlines and UNIX newlines.
+*/
 #[deriving(Clone, Default, Eq, PartialEq, Show)]
 pub struct Exact;
 

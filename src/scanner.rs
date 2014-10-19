@@ -1,7 +1,20 @@
+/*!
+This module provides both the `Scanner` trait, and the implementations for various basic types.
+
+If you want to implement your own, the simplest way is to use the `scanner!` macro from the main `scan` package.  However, you can also implement a scanner by hand.
+*/
 use std::from_str::FromStr;
 
 use super::{ScanCursor, ScanError};
 
+/**
+This macro is a shortcut used in this module.  It implements a scanner for the type `T` given two constraints:
+
+- The existance of a function `scan_fn` which takes a string and returns either `Some(uint)` with the length of the string slice to convert *or* a `None` indicating that there is no valid value to scan.
+- That there exists an implementation of `std::from_str::FromStr` for `T` which can be used to convert the string slice denoted by `scan_fn` into a value of type `T`.
+
+The `name` parameter is used in error messages to identify what sort of token was expected, when `scan_fn` returns `None`.
+*/
 #[macro_export]
 macro_rules! from_str_slice_scanner {
 	($scan_fn:path -> $T:ty as $name:expr) => {
@@ -25,7 +38,18 @@ macro_rules! from_str_slice_scanner {
 	};
 }
 
+/**
+This trait provides the abstract interface for extracting strongly-typed values out of a string.
+*/
 pub trait Scanner<'a> {
+	/**
+The `scan` function's job is to, given a `ScanCursor`, either:
+
+- return a value extracted from the input cursor's position *and* a successor cursor past the end of the input string which was consumed, or
+- a `ScanError` describing why a value could not be extracted.
+
+Another way of putting it: you should either parse a value and fast-forward the cursor over the parts of the input you used, or explain why you couldn't.
+	*/
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(Self, Cur), ScanError>;
 }
 
@@ -82,11 +106,19 @@ from_str_slice_scanner! { scan_uint -> u32 as "32-bit unsigned integer" }
 from_str_slice_scanner! { scan_uint -> u64 as "64-bit unsigned integer" }
 from_str_slice_scanner! { scan_uint -> uint as "unsigned integer" }
 
+/**
+This function is just a short-hand way of accessing the byte offset *after* the code point at a given position in a string.
+*/
 pub fn next_char_at(s: &str, at: uint) -> uint {
 	let ::std::str::CharRange { ch: _, next } = s.char_range_at(at);
 	next
 }
 
+/**
+This function scans the length of a float literal from a string.
+
+Note that this doesn't support various bits of normal Rust syntax; like embedded underscores or hex literals.
+*/
 pub fn scan_float(s: &str) -> Option<uint> {
 	enum State {
 		Start,
@@ -132,6 +164,11 @@ pub fn scan_float(s: &str) -> Option<uint> {
 	return Some(s.len())
 }
 
+/**
+This function scans the length of an unsigned integer literal from a string.
+
+Note that this doesn't support embedded underscores, or non-decimal bases.
+*/
 pub fn scan_uint<'a>(s: &'a str) -> Option<uint> {
 	s.char_indices()
 		.take_while(|&(_,c)| '0' <= c && c <= '9')
@@ -139,6 +176,11 @@ pub fn scan_uint<'a>(s: &'a str) -> Option<uint> {
 		.last().unwrap_or(None)
 }
 
+/**
+This function scans the length of a (potentially) signed integer literal from a string.
+
+Note that this doesn't support embedded underscores, or non-decimal bases.
+*/
 pub fn scan_int<'a>(s: &'a str) -> Option<uint> {
 	if s.len() == 0 { return None }
 

@@ -1,11 +1,11 @@
 /*!
-Provides a way to read lines from an unbuffered reader without needing to either push back or buffer bytes.
+This module provides some miscellaneous IO support routines.
 */
 
 use std::io::{IoError, IoResult, OtherIoError};
 
 /**
-Reads a line of input from the given `Reader`.  This does not require a push back buffer.  It returns the line *with* the line terminator.
+Reads a line of input from the given `Reader`.  This does not require a push-back buffer.  It returns the line *with* the line terminator.
 
 Note that this function *does not* support old-school Mac OS newlines (i.e. a single carriage return).  If it encounters a carriage return which is *not* immediately followed by a line feed, the carriage return will be included as part of the line.
 */
