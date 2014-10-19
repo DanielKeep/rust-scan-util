@@ -26,7 +26,7 @@ pub trait ScanCursor<'scanee>: Clone + Eq {
 
 	fn expected(&self, desc: &str) -> ScanError {
 		let msg = match self.pop_token() {
-			Some((got, _)) => format!("expected {}, got `{}`", desc, got),
+			Some((got, _)) => format!("expected {}, got `{}`", desc, got.escape_default()),
 			None => format!("expected {}, got end of input", desc)
 		};
 
@@ -43,16 +43,16 @@ pub trait ScanCursor<'scanee>: Clone + Eq {
 	}
 
 	fn expected_one_of(&self, toks: &[&str]) -> ScanError {
-		let mut toks = toks.iter().map(|s| format!("`{}`", s));
+		let mut toks = toks.iter().map(|s| format!("`{}`", s.escape_default()));
 		let toks = {
 			let first = toks.next();
 			first.map(|first| toks.fold(first, |a,b| format!("{}, {}", a, b)))
 		};
 
 		let msg = match (toks, self.pop_token()) {
-			(Some(exp), Some((got, _))) => format!("expected {}, got `{}`", exp, got),
+			(Some(exp), Some((got, _))) => format!("expected {}, got `{}`", exp, got.escape_default()),
 			(Some(exp), None) => format!("expected {}, got end of input", exp),
-			(None, Some((got, _))) => format!("expected end of input, got `{}`", got),
+			(None, Some((got, _))) => format!("expected end of input, got `{}`", got.escape_default()),
 			(None, None) => "expected end of input".into_string()
 		};
 
