@@ -3,7 +3,6 @@ This module provides both the `Scanner` trait, and the implementations for vario
 
 If you want to implement your own, the simplest way is to use the `scanner!` macro from the main `scan` package.  However, you can also implement a scanner by hand.
 */
-use std::from_str::FromStr;
 
 use super::{ScanCursor, ScanError};
 
@@ -11,7 +10,7 @@ use super::{ScanCursor, ScanError};
 This macro is a shortcut used in this module.  It implements a scanner for the type `T` given two constraints:
 
 - The existance of a function `scan_fn` which takes a string and returns either `Some(uint)` with the length of the string slice to convert *or* a `None` indicating that there is no valid value to scan.
-- That there exists an implementation of `std::from_str::FromStr` for `T` which can be used to convert the string slice denoted by `scan_fn` into a value of type `T`.
+- That there exists an implementation of `std::str::FromStr` for `T` which can be used to convert the string slice denoted by `scan_fn` into a value of type `T`.
 
 The `name` parameter is used in error messages to identify what sort of token was expected, when `scan_fn` returns `None`.
 */
@@ -30,7 +29,7 @@ macro_rules! from_str_slice_scanner {
 				let s = cursor.str_slice_to(end);
 				let cursor = cursor.slice_from(end);
 
-				FromStr::from_str(s)
+				from_str(s)
 					.map(|i| Ok((i, cursor.clone())))
 					.unwrap_or_else(err)
 			}
@@ -233,12 +232,12 @@ mod test {
 
 	#[test]
 	fn test_floats() {
-		use std::from_str::FromStr;
+		use std::str::FromStr;
 		use std::num::{Float, Zero};
 
 		fn test<'a, F: Float + Scanner<'a> + FromStr>() {
 			let f = |v:F| v;
-			let fs = |s:&str| -> F FromStr::from_str(s).unwrap();
+			let fs = |s:&str| -> F from_str(s).unwrap();
 			
 			assert!(scan_a::<F>("").err().is_some());
 			assert!(scan_a::<F>("0").ok().unwrap().0 == f(Zero::zero()));
