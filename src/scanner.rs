@@ -233,16 +233,16 @@ mod test {
 	#[test]
 	fn test_floats() {
 		use std::str::FromStr;
-		use std::num::{Float, Zero};
+		use std::num::Float;
 
 		fn test<'a, F: Float + Scanner<'a> + FromStr>() {
 			let f = |v:F| v;
 			let fs = |s:&str| -> F from_str(s).unwrap();
 			
 			assert!(scan_a::<F>("").err().is_some());
-			assert!(scan_a::<F>("0").ok().unwrap().0 == f(Zero::zero()));
-			assert!(scan_a::<F>("0.0").ok().unwrap().0 == f(Zero::zero()));
-			assert!(scan_a::<F>("-0").ok().unwrap().0 == -f(Zero::zero()));
+			assert!(scan_a::<F>("0").ok().unwrap().0 == f(Float::zero()));
+			assert!(scan_a::<F>("0.0").ok().unwrap().0 == f(Float::zero()));
+			assert!(scan_a::<F>("-0").ok().unwrap().0 == -f(Float::zero()));
 			assert!(scan_a::<F>("1.0").ok().unwrap().0 == fs("1.0"));
 			assert!(scan_a::<F>("1.00").ok().unwrap().0 == fs("1.0"));
 			assert!(scan_a::<F>("1.0e0").ok().unwrap().0 == fs("1.0"));
@@ -256,12 +256,12 @@ mod test {
 	#[test]
 	fn test_sized_ints() {
 		use std::fmt::Show;
-		use std::num::{Bounded, Int, Zero};
+		use std::num::Int;
 
 		fn test<'a, I: Int + Scanner<'a> + Show>(check_past: bool) {
-			let zero: I = Zero::zero();
-			let min: I = Bounded::min_value();
-			let max: I = Bounded::max_value();
+			let zero: I = Int::zero();
+			let min: I = Int::min_value();
+			let max: I = Int::max_value();
 
 			assert!(scan_a::<I>("").err().is_some());
 			assert!(scan_a::<I>("0").ok().unwrap().0 == zero);
