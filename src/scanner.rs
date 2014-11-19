@@ -127,33 +127,33 @@ pub fn scan_float(s: &str) -> Option<uint> {
 		Exponent,
 	}
 
-	let mut state = Start;
+	let mut state = State::Start;
 
 	for (i,c) in s.char_indices() {
 		match state {
-			Start => {
+			State::Start => {
 				assert!(i == 0);
 				match c {
-					'0'...'9' | '-' => state = Whole,
+					'0'...'9' | '-' => state = State::Whole,
 					_ => return None
 				}
 			},
-			Whole => match c {
+			State::Whole => match c {
 				'0'...'9' => (),
-				'.' => state = Suffix,
-				'e' | 'E' => state = ExponentStart,
+				'.' => state = State::Suffix,
+				'e' | 'E' => state = State::ExponentStart,
 				_ => return Some(i)
 			},
-			Suffix => match c {
+			State::Suffix => match c {
 				'0'...'9' => (),
-				'e' | 'E' => state = ExponentStart,
+				'e' | 'E' => state = State::ExponentStart,
 				_ => return Some(i),
 			},
-			ExponentStart => match c {
-				'+' | '-' | '0'...'9' => state = Exponent,
+			State::ExponentStart => match c {
+				'+' | '-' | '0'...'9' => state = State::Exponent,
 				_ => return Some(i)
 			},
-			Exponent => match c {
+			State::Exponent => match c {
 				'0'...'9' => (),
 				_ => return Some(i)
 			}

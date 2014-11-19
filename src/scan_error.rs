@@ -4,6 +4,8 @@ This module provides the `ScanError` type, which encodes the various kinds of er
 use std::fmt;
 use std::fmt::{Formatter, FormatError};
 
+pub use self::ScanError::{OtherScanError, ScanIoError};
+
 pub type ScanResult<T> = Result<T, ScanError>;
 
 /**
