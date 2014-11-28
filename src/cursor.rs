@@ -6,7 +6,7 @@ These are used by the generated code as a way to track scanning progress through
 use super::{Tokenizer, Whitespace, CompareStrs};
 use super::{ScanError, OtherScanError};
 
-use std::fmt::{Show, Formatter, FormatError};
+use std::fmt::{mod, Show, Formatter};
 use std::str::CharRange;
 
 /**
@@ -168,7 +168,7 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> Cursor<'a, Tok, Sp, Cs
 }
 
 impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> Show for Cursor<'a, Tok, Sp, Cs> {
-	fn fmt(&self, f: &mut Formatter) -> Result<(), FormatError> {
+	fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
 		try!(write!(f, "Cursor<{}, {}, {}> {{ offset: {}, .. }}", self.tc, self.sp, self.cs, self.offset));
 		Ok(())
 	}

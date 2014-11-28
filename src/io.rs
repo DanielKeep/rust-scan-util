@@ -108,8 +108,8 @@ fn test_read_utf8_char() {
 	test_str("abcdef");
 	test_str("私の日本語わ下手ですよ！");
 
-	assert!(first([0b1000_0000u8]).is_err());
-	assert!(first([0b1100_0000u8, 0b0000_0000]).is_err());
+	assert!(first(&[0b1000_0000u8]).is_err());
+	assert!(first(&[0b1100_0000u8, 0b0000_0000]).is_err());
 }
 
 /**

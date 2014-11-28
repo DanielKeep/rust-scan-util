@@ -29,8 +29,8 @@ impl Tokenizer for WordsAndInts {
 
 		if ch0.is_alphabetic() {
 			len_while(s, |ch| ch.is_alphabetic())
-		} else if ch0.is_digit() {
-			len_while(s, |ch| ch.is_digit())
+		} else if ch0.is_digit(10) {
+			len_while(s, |ch| ch.is_digit(10))
 		} else {
 			None
 		}
@@ -68,10 +68,10 @@ impl Tokenizer for IdentsAndInts {
 
 		let ch0 = s.char_at(0);
 
-		if ch0 == '_' || ch0.is_XID_start() {
-			len_while(s, |ch| ch.is_XID_continue())
-		} else if ch0.is_digit() {
-			len_while(s, |ch| ch.is_digit())
+		if ch0 == '_' || ch0.is_xid_start() {
+			len_while(s, |ch| ch.is_xid_continue())
+		} else if ch0.is_digit(10) {
+			len_while(s, |ch| ch.is_digit(10))
 		} else {
 			None
 		}
