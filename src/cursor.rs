@@ -121,8 +121,11 @@ When a single token is provided, this is equivalent to `expected_tok`.  When no 
 	fn expected_one_of(&self, toks: &[&str]) -> ScanError {
 		let mut toks = toks.iter().map(|s| format!("`{}`", s.escape_default()));
 		let toks = {
-			let first = toks.next();
-			first.map(|first| toks.fold(first, |a,b| format!("{}, {}", a, b)))
+			if let Some(first) = toks.next() {
+				Some(toks.fold(first, |a,b| format!("{}, {}", a, b)))
+			} else {
+				None
+			}
 		};
 
 		let msg = match (toks, self.pop_token()) {
