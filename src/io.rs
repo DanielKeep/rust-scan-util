@@ -34,9 +34,11 @@ pub fn read_line<R: Reader>(r: &mut R) -> IoResult<String> {
 
 #[test]
 fn test_read_line() {
+	use std::borrow::ToOwned;
+
 	let s = "line one\nline two\r\nline three\n";
 	let mut r = ::std::io::BufReader::new(s.as_bytes());
-	let oks = |s:&str| Ok(s.into_string());
+	let oks = |s:&str| Ok(s.to_owned());
 
 	assert_eq!(read_line(&mut r), oks("line one\n"));
 	assert_eq!(read_line(&mut r), oks("line two\r\n"));

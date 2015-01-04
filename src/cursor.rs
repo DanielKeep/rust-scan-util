@@ -6,7 +6,7 @@ These are used by the generated code as a way to track scanning progress through
 use super::{Tokenizer, Whitespace, CompareStrs};
 use super::{ScanError, OtherScanError};
 
-use std::fmt::{mod, Show, Formatter};
+use std::fmt::{self, Show, Formatter};
 use std::str::CharRange;
 
 /**
@@ -119,6 +119,8 @@ Create a `ScanError` tied to the current position, indicating that you expected 
 When a single token is provided, this is equivalent to `expected_tok`.  When no tokens are provided, this is equivalent to `expected_eof`.
 	*/
 	fn expected_one_of(&self, toks: &[&str]) -> ScanError {
+		use std::borrow::ToOwned;
+
 		let mut toks = toks.iter().map(|s| format!("`{}`", s.escape_default()));
 		let toks = {
 			if let Some(first) = toks.next() {
@@ -132,7 +134,7 @@ When a single token is provided, this is equivalent to `expected_tok`.  When no 
 			(Some(exp), Some((got, _))) => format!("expected {}, got `{}`", exp, got.escape_default()),
 			(Some(exp), None) => format!("expected {}, got end of input", exp),
 			(None, Some((got, _))) => format!("expected end of input, got `{}`", got.escape_default()),
-			(None, None) => "expected end of input".into_string()
+			(None, None) => "expected end of input".to_owned()
 		};
 
 		OtherScanError(msg, self.consumed())
@@ -149,7 +151,7 @@ Create a `ScanError` tied to the current position, indicating that you expected 
 /**
 This structure implements the `ScanCursor` trait.
 */
-#[deriving(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Cursor<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> {
 	slice: &'a str,
 	offset: uint,

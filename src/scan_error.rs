@@ -11,7 +11,7 @@ pub type ScanResult<T> = Result<T, ScanError>;
 /**
 This is used to indicate why a scan has failed.
 */
-#[deriving(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub enum ScanError {
 	/**
 Some other scan error occurred.  The `String` is the message describing the problem, the `uint` is the offset within the input at which the error occurred.

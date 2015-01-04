@@ -21,7 +21,7 @@ Provides exact comparison semantics: two strings are equal if and only if their 
 
 This *does not* take Unicode normalisation into account.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct Exact;
 
 impl CompareStrs for Exact {
@@ -55,7 +55,7 @@ This *does not* take Unicode normalisation into account.
 
 This is provided as a (possibly faster) alternative to the default `CaseInsensitive` implementation.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct AsciiCaseInsensitive;
 
 impl CompareStrs for AsciiCaseInsensitive {
@@ -89,7 +89,7 @@ Provides case-insensitive semantics: two strings are equal if and only if their 
 
 This *does not* take Unicode normalisation into account.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct CaseInsensitive;
 
 impl CompareStrs for CaseInsensitive {

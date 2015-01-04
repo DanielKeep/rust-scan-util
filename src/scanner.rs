@@ -19,7 +19,7 @@ macro_rules! from_str_slice_scanner {
 	($scan_fn:path -> $T:ty as $name:expr) => {
 		impl<'a> Scanner<'a> for $T {
 			fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<($T, Cur), ScanError> {
-				let err = || Err(cursor.expected($name));
+				let err = |:| Err(cursor.expected($name));
 
 				let end = match $scan_fn(cursor.tail_str()) {
 					Some(i) => i,
@@ -29,7 +29,7 @@ macro_rules! from_str_slice_scanner {
 				let s = cursor.str_slice_to(end);
 				let cursor = cursor.slice_from(end);
 
-				from_str(s)
+				s.parse()
 					.map(|i| Ok((i, cursor.clone())))
 					.unwrap_or_else(err)
 			}
@@ -81,7 +81,8 @@ impl<'a> Scanner<'a> for &'a str {
 
 impl<'a> Scanner<'a> for String {
 	fn scan<Cur: ScanCursor<'a>>(cursor: &Cur) -> Result<(String, Cur), ScanError> {
-		cursor.pop_token().map(|(s,c)| Ok((s.into_string(), c)))
+		use std::borrow::ToOwned;
+		cursor.pop_token().map(|(s,c)| Ok((s.to_owned(), c)))
 			.unwrap_or_else(|| Err(cursor.expected("any token")))
 	}
 }
@@ -237,7 +238,7 @@ mod test {
 
 		fn test<'a, F: Float + Scanner<'a> + FromStr>() {
 			let f = |v:F| v;
-			let fs = |s:&str| -> F from_str(s).unwrap();
+			let fs = |s:&str| -> F s.parse().unwrap();
 			
 			assert!(scan_a::<F>("").err().is_some());
 			assert!(scan_a::<F>("0").ok().unwrap().0 == f(Float::zero()));

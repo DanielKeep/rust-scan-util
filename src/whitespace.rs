@@ -27,7 +27,7 @@ The default implementation provided assumes that there are no explicit whitespac
 /**
 This policy simply skips over all codepoints that satisfy the `White_Space` property.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct Ignore;
 
 impl Whitespace for Ignore {
@@ -54,7 +54,7 @@ fn test_ws_ignore() {
 /**
 This policy simply skips over all codepoints that satisfy the `White_Space` property, *except* for line terminators, which become an explicit `"\n"` token.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct ExplicitNewline;
 
 impl Whitespace for ExplicitNewline {
@@ -94,7 +94,7 @@ This policy does not skip any whitespace, instead creating explicit tokens in tw
 - Single newline sequences (i.e. `\r\n`, `\r` or `\n`) become a single `"\n"` token.
 - Runs of all other whitespace are collapsed to a single `" "` token.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct Explicit;
 
 impl Whitespace for Explicit {
@@ -131,7 +131,7 @@ fn test_ws_explicit() {
 /**
 This policy collapses all runs of code points satisfying the `White_Space` property into a single `" "` token, including newlines.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct ExplicitAny;
 
 impl Whitespace for ExplicitAny {
@@ -162,7 +162,7 @@ fn test_ws_explicit_any() {
 /**
 This policy turns newline sequences and all whitespace code points into individual tokens.  That is, tab and space produce different tokens, as do Windows newlines and UNIX newlines.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct Exact;
 
 impl Whitespace for Exact {

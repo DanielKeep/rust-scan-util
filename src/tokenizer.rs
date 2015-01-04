@@ -16,7 +16,7 @@ If there is a valid token present at the start of the given string, return its l
 /**
 Tokenises a string into words and integers.  Specifically, a word is a sequence of one or more code points which have the `Alphabetic` property; an integer is a sequence of one or more code points which are in the `N*` general category.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct WordsAndInts;
 
 impl Tokenizer for WordsAndInts {
@@ -57,7 +57,7 @@ fn test_words_and_ints() {
 /**
 Tokenises a string into identifiers and integers.  Specifically, an identifier is a sequence of one code point which is either an underscore or satisfies the `XID_Start` property, followed by zero or more code points which satisfy the `XID_Continue` property; an integer is a sequence of one or more code points which are in the `N*` general category.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct IdentsAndInts;
 
 impl Tokenizer for IdentsAndInts {
@@ -100,7 +100,7 @@ fn test_idents_and_ints() {
 /**
 Tokenises a string into space-delimited tokens.  Specifically, a token will be a sequence of one or more code points which *do not* satisfy the `White_Space` property.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct SpaceDelimited;
 
 impl Tokenizer for SpaceDelimited {
@@ -138,7 +138,7 @@ This tokeniser interprets the entire input string as a single token *unless* the
 
 As a result, this tokeniser is almost totally useless at runtime.  If you *do* use this tokeniser for a pattern, you will almost certainly want to specify a different runtime tokeniser using `#[runtime_tok="..."]`.
 */
-#[deriving(Clone, Default, Eq, PartialEq, Show)]
+#[derive(Clone, Copy, Default, Eq, PartialEq, Show)]
 pub struct Explicit;
 
 impl Tokenizer for Explicit {
