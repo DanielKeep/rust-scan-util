@@ -9,7 +9,7 @@ use std::fmt::Show;
 /**
 This trait provides equality comparison for strings.
 */
-pub trait CompareStrs: Clone + Eq + Show {
+pub trait CompareStrs: Eq + Show {
 	/**
 Compare two strings, returning `true` if they are considered equal under the semantics of the implementing type.
 	*/

@@ -6,7 +6,7 @@ use super::len_while;
 /**
 This trait is used to tokenise both input strings fed to a `scan*` macro *and* string literals in scan patterns.
 */
-pub trait Tokenizer: Clone + Eq + ::std::fmt::Show {
+pub trait Tokenizer: Eq + ::std::fmt::Show {
 	/**
 If there is a valid token present at the start of the given string, return its length.  Otherwise, return `None`.  Note that `ScanCursor::pop_token` will automatically turn the next single code point into a token if this method returns `None`.  When implementing this function, you may rely on this behaviour.
 	*/

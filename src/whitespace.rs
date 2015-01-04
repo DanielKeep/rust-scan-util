@@ -6,7 +6,7 @@ use super::len_while;
 /**
 Implementations of the `Whitespace` trait are responsible for controlling when whitespace can be skipped, and when to turn whitespace into an explicit token.
 */
-pub trait Whitespace: Clone + Eq + ::std::fmt::Show {
+pub trait Whitespace: Eq + ::std::fmt::Show {
 	/**
 Indicates how many bytes at the start of the given string are "skippable" whitespace.
 	*/

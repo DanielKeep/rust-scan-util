@@ -179,7 +179,7 @@ impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> Show for Cursor<'a, To
 	}
 }
 
-impl<'a, Tok: Tokenizer, Sp: Whitespace, Cs: CompareStrs> ScanCursor<'a> for Cursor<'a, Tok, Sp, Cs> {
+impl<'a, Tok: Tokenizer + Clone, Sp: Whitespace + Clone, Cs: CompareStrs + Clone> ScanCursor<'a> for Cursor<'a, Tok, Sp, Cs> {
 	fn expect_tok(&self, s: &str) -> Result<Cursor<'a, Tok, Sp, Cs>, ScanError> {
 		debug!("{}.expect_tok({})", self, s);
 		match self.pop_token() {
